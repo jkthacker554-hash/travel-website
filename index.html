@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Make My Trip - Travel Agency</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Segoe UI", sans-serif;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      width: 100%;
+      min-height: 100vh;
+      overflow-x: hidden;
+      transition: background 0.5s ease;
+    }
+
+    body.day {
+      background: #87ceeb;
+    }
+
+    body.night {
+      background: #020b2d;
+    }
+
+    /* ===== FULL PAGE LOADER ===== */
+    .page-loader {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(135deg, #87ceeb, #b0e0ff);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      transition: opacity 0.6s ease, visibility 0.6s ease;
+    }
+
+    .page-loader.hidden {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .loader-box {
+      text-align: center;
+    }
+
+    .loader-plane {
+      width: 80px;
+      animation: planeFly 1.5s infinite ease-in-out;
+    }
+
+    @keyframes planeFly {
+      0% { transform: translateX(-20px) rotate(0deg); opacity: 0.5; }
+      50% { transform: translateX(20px) rotate(5deg); opacity: 1; }
+      100% { transform: translateX(-20px) rotate(0deg); opacity: 0.5; }
+    }
+
+    .loader-text {
+      margin-top: 15px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #003366;
+      letter-spacing: 1px;
+    }
+
+    /* ===== SKY BACKGROUND ===== */
+    .sky {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      transition: background 0.5s ease;
+      z-index: -1;
+    }
+
+    body.day .sky {
+      background: linear-gradient(to bottom, #87ceeb, #b0e0ff);
+    }
+
+    body.night .sky {
+      background: linear-gradient(to bottom, #020b2d, #0a1a3a);
+    }
+
+    /* ===== CLOUDS ===== */
+    .cloud {
+      position: absolute;
+      background: #fff;
+      border-radius: 50px;
+      opacity: 0.9;
+      box-shadow: 0 0 40px rgba(255,255,255,0.6);
+      animation: moveClouds linear infinite;
+      transition: background 0.5s ease, opacity 0.5s ease;
+    }
+
+    body.night .cloud {
+      background: rgba(255,255,255,0.25);
+      box-shadow: 0 0 25px rgba(255,255,255,0.3);
+      opacity: 0.4;
+    }
+
+    .cloud::before,
+    .cloud::after {
+      content: "";
+      position: absolute;
+      background: inherit;
+      border-radius: 50%;
+    }
+
+    .cloud::before {
+      width: 60px;
+      height: 60px;
+      top: -30px;
+      left: 10px;
+    }
+
+    .cloud::after {
+      width: 80px;
+      height: 80px;
+      top: -40px;
+      right: 15px;
+    }
+
+    @keyframes moveClouds {
+      from { transform: translateX(-200px); }
+      to { transform: translateX(110vw); }
+    }
+
+    /* ===== NIGHT MODE TOGGLE ===== */
+    .toggle-container {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      z-index: 10;
+    }
+
+    .toggle-btn {
+      background: rgba(255,255,255,0.4);
+      border: none;
+      border-radius: 30px;
+      padding: 8px 14px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+
+    body.night .toggle-btn {
+      background: rgba(255,255,255,0.15);
+      color: #ffffff;
+      box-shadow: 0 5px 15px rgba(255,255,255,0.2);
+    }
+
+    .toggle-btn:hover {
+      transform: scale(1.1);
+    }
+
+    /* ===== HERO CONTENT ===== */
+    .hero {
+      position: relative;
+      z-index: 5;
+      text-align: center;
+      padding: 110px 16px 70px;
+      transition: color 0.5s ease;
+      animation: fadeInUp 1s ease both;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(40px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    body.day .hero {
+      color: #003366;
+    }
+
+    body.night .hero {
+      color: #ffffff;
+    }
+
+    .gradient-text {
+      font-size: clamp(2.2rem, 6vw, 3.8rem);
+      font-weight: 800;
+      letter-spacing: 3px;
+      background: linear-gradient(90deg, #003366, #0055aa, #0077cc, #00aaff);
+      background-size: 300% 300%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: gradientMove 6s ease infinite;
+      text-shadow: 0 4px 20px rgba(0, 85, 170, 0.4);
+      transition: all 0.5s ease;
+    }
+
+    body.night .gradient-text {
+      background: linear-gradient(90deg, #ffffff, #9ccfff, #6ab7ff, #ffffff);
+      text-shadow: 0 4px 25px rgba(255,255,255,0.4);
+    }
+
+    @keyframes gradientMove {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .typing-text {
+      font-size: clamp(1.05rem, 3vw, 1.4rem);
+      margin-top: 12px;
+      min-height: 30px;
+      letter-spacing: 1px;
+      transition: color 0.5s ease;
+    }
+
+    body.day .typing-text {
+      color: #004080;
+      text-shadow: 0 2px 10px rgba(255,255,255,0.8);
+    }
+
+    body.night .typing-text {
+      color: #e6f2ff;
+      text-shadow: 0 2px 15px rgba(0,0,0,0.6);
+    }
+
+    /* ===== BUTTONS ===== */
+    .cta-buttons {
+      margin-top: 28px;
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      text-decoration: none;
+      padding: 12px 26px;
+      border-radius: 35px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      backdrop-filter: blur(12px);
+      transition: all 0.35s ease;
+      font-size: 0.95rem;
+      cursor: pointer;
+      border: none;
+      position: relative;
+      overflow: hidden;
+      min-width: 150px;
+    }
+
+    body.day .btn.primary {
+      background: linear-gradient(135deg, #0055aa, #00aaff);
+      color: #ffffff;
+      box-shadow: 0 10px 30px rgba(0, 85, 170, 0.4);
+    }
+
+    body.night .btn.primary {
+      background: linear-gradient(135deg, #6ab7ff, #ffffff);
+      color: #020b2d;
+      box-shadow: 0 10px 30px rgba(106, 183, 255, 0.4);
+    }
+
+    body.day .btn.secondary {
+      border: 1px solid rgba(0, 85, 170, 0.6);
+      color: #003366;
+      background: rgba(255,255,255,0.5);
+    }
+
+    body.night .btn.secondary {
+      border: 1px solid rgba(255,255,255,0.6);
+      color: #ffffff;
+      background: rgba(255,255,255,0.1);
+    }
+
+    .btn:hover {
+      transform: translateY(-5px) scale(1.06);
+      box-shadow: 0 14px 40px rgba(0, 170, 255, 0.5);
+    }
+
+    /* ===== BUTTON LOADER ===== */
+    .btn.loading {
+      pointer-events: none;
+      opacity: 0.85;
+    }
+
+    .btn.loading span {
+      visibility: hidden;
+    }
+
+    .btn.loading::after {
+      content: "";
+      width: 22px;
+      height: 22px;
+      border: 3px solid rgba(255,255,255,0.5);
+      border-top: 3px solid #ffffff;
+      border-radius: 50%;
+      position: absolute;
+      animation: spin 0.8s linear infinite;
+    }
+
+    body.night .btn.loading::after {
+      border: 3px solid rgba(0,0,0,0.2);
+      border-top: 3px solid #020b2d;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ===== DESTINATIONS SECTION ===== */
+    .destinations-section {
+      padding: 90px 6% 70px;
+      text-align: center;
+      display: none;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      animation: fadeInUp 1s ease both;
+    }
+
+    .destinations-section.active {
+      display: block;
+      opacity: 1;
+    }
+
+    .destinations-section h2 {
+      font-size: clamp(2rem, 5vw, 2.8rem);
+      margin-bottom: 12px;
+    }
+
+    body.day .destinations-section h2 {
+      color: #003366;
+    }
+
+    body.night .destinations-section h2 {
+      color: #ffffff;
+    }
+
+    .destinations-section p.subtitle {
+      font-size: 1rem;
+      margin-bottom: 40px;
+      opacity: 0.85;
+    }
+
+    .cards-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 24px;
+    }
+
+    .card {
+      border-radius: 20px;
+      overflow: hidden;
+      position: relative;
+      backdrop-filter: blur(12px);
+      transition: all 0.4s ease;
+      cursor: pointer;
+    }
+
+    body.day .card {
+      background: rgba(255,255,255,0.75);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+    }
+
+    body.night .card {
+      background: rgba(255,255,255,0.08);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.5);
+    }
+
+    .card:hover {
+      transform: translateY(-10px) scale(1.03);
+      box-shadow: 0 18px 45px rgba(0, 170, 255, 0.35);
+    }
+
+    .card-image {
+      height: 160px;
+      background-size: cover;
+      background-position: center;
+    }
+
+    .card-content {
+      padding: 18px;
+      text-align: left;
+    }
+
+    .card-content h3 {
+      font-size: 1.2rem;
+      margin-bottom: 6px;
+    }
+
+    body.day .card-content h3 {
+      color: #003366;
+    }
+
+    body.night .card-content h3 {
+      color: #ffffff;
+    }
+
+    .card-content p {
+      font-size: 0.92rem;
+      line-height: 1.45;
+      opacity: 0.85;
+    }
+
+    body.day .card-content p {
+      color: #004080;
+    }
+
+    body.night .card-content p {
+      color: #dbe9ff;
+    }
+
+    .card-content a {
+      display: inline-block;
+      margin-top: 10px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: color 0.3s ease;
+    }
+
+    body.day .card-content a {
+      color: #0077cc;
+    }
+
+    body.night .card-content a {
+      color: #9ccfff;
+    }
+
+    .card-content a:hover {
+      text-decoration: underline;
+    }
+
+    /* ===== FORM SECTION ===== */
+    .form-section {
+      padding: 100px 16px 90px;
+      display: none;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      text-align: center;
+      animation: fadeInUp 1s ease both;
+    }
+
+    .form-section.active {
+      display: block;
+      opacity: 1;
+    }
+
+    .form-container {
+      max-width: 520px;
+      margin: auto;
+      border-radius: 25px;
+      padding: 32px 22px;
+      backdrop-filter: blur(15px);
+      transition: all 0.5s ease;
+    }
+
+    body.day .form-container {
+      background: rgba(255,255,255,0.85);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+    }
+
+    body.night .form-container {
+      background: rgba(255,255,255,0.12);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    }
+
+    .form-container h2 {
+      font-size: clamp(1.8rem, 5vw, 2.3rem);
+      margin-bottom: 8px;
+    }
+
+    body.day .form-container h2 {
+      color: #003366;
+    }
+
+    body.night .form-container h2 {
+      color: #ffffff;
+    }
+
+    .form-container p.subtitle {
+      font-size: 0.95rem;
+      margin-bottom: 26px;
+      opacity: 0.85;
+    }
+
+    .form-group {
+      position: relative;
+      margin-bottom: 22px;
+      text-align: left;
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 14px 14px;
+      border-radius: 12px;
+      border: none;
+      outline: none;
+      font-size: 0.95rem;
+      transition: all 0.3s ease;
+    }
+
+    body.day .form-group input,
+    body.day .form-group select {
+      background: rgba(240, 248, 255, 0.95);
+      color: #003366;
+    }
+
+    body.night .form-group input,
+    body.night .form-group select {
+      background: rgba(255,255,255,0.18);
+      color: #ffffff;
+    }
+
+    .form-group input::placeholder {
+      color: rgba(0,0,0,0.5);
+    }
+
+    body.night .form-group input::placeholder {
+      color: rgba(255,255,255,0.6);
+    }
+
+    .form-group small {
+      color: #ff4d4d;
+      font-size: 0.75rem;
+      position: absolute;
+      bottom: -16px;
+      left: 6px;
+      display: none;
+    }
+
+    .form-group.error small {
+      display: block;
+    }
+
+    .form-group.success input,
+    .form-group.success select {
+      border: 2px solid #2ecc71;
+    }
+
+    .form-group.error input,
+    .form-group.error select {
+      border: 2px solid #ff4d4d;
+    }
+
+    .submit-btn {
+      width: 100%;
+      margin-top: 10px;
+      padding: 14px;
+      border-radius: 30px;
+      border: none;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    body.day .submit-btn {
+      background: linear-gradient(135deg, #0055aa, #00aaff);
+      color: #ffffff;
+      box-shadow: 0 10px 30px rgba(0, 85, 170, 0.4);
+    }
+
+    body.night .submit-btn {
+      background: linear-gradient(135deg, #6ab7ff, #ffffff);
+      color: #020b2d;
+      box-shadow: 0 10px 30px rgba(106, 183, 255, 0.4);
+    }
+
+    .submit-btn:hover {
+      transform: translateY(-3px) scale(1.04);
+      box-shadow: 0 14px 40px rgba(0, 170, 255, 0.5);
+    }
+
+    .submit-btn.loading {
+      pointer-events: none;
+      opacity: 0.85;
+    }
+
+    .submit-btn.loading span {
+      visibility: hidden;
+    }
+
+    .submit-btn.loading::after {
+      content: "";
+      width: 22px;
+      height: 22px;
+      border: 3px solid rgba(255,255,255,0.5);
+      border-top: 3px solid #ffffff;
+      border-radius: 50%;
+      position: absolute;
+      inset: 0;
+      margin: auto;
+      animation: spin 0.8s linear infinite;
+    }
+
+    body.night .submit-btn.loading::after {
+      border: 3px solid rgba(0,0,0,0.2);
+      border-top: 3px solid #020b2d;
+    }
+
+    /* ===== SUCCESS ANIMATION OVERLAY ===== */
+    .success-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9998;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+
+    .success-overlay.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .success-box {
+      background: linear-gradient(135deg, #ffffff, #e6f7ff);
+      border-radius: 25px;
+      padding: 35px 28px;
+      text-align: center;
+      max-width: 320px;
+      width: 90%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      animation: popIn 0.5s ease both;
+    }
+
+    body.night .success-box {
+      background: linear-gradient(135deg, #ffffff, #dbe9ff);
+    }
+
+    @keyframes popIn {
+      0% { transform: scale(0.6); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .success-check {
+      width: 80px;
+      height: 80px;
+      margin: auto;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #2ecc71, #27ae60);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 15px;
+      animation: pulse 1.2s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.6); }
+      70% { box-shadow: 0 0 0 20px rgba(46, 204, 113, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); }
+    }
+
+    .success-check::after {
+      content: "✔";
+      font-size: 2.8rem;
+      color: #ffffff;
+      font-weight: bold;
+    }
+
+    .success-box h3 {
+      font-size: 1.6rem;
+      margin-bottom: 8px;
+      color: #2c3e50;
+    }
+
+    .success-box p {
+      font-size: 0.95rem;
+      color: #555555;
+    }
+
+    .success-box button {
+      margin-top: 18px;
+      padding: 10px 22px;
+      border-radius: 25px;
+      border: none;
+      background: linear-gradient(135deg, #0055aa, #00aaff);
+      color: #ffffff;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .success-box button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 10px 30px rgba(0, 85, 170, 0.4);
+    }
+
+    /* ===== BACK TO HOME LINK ===== */
+    .back-home {
+      margin-top: 22px;
+      display: inline-block;
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.3s ease;
+    }
+
+    body.day .back-home {
+      color: #0077cc;
+    }
+
+    body.night .back-home {
+      color: #9ccfff;
+    }
+
+    .back-home:hover {
+      text-decoration: underline;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 480px) {
+      .hero {
+        padding: 100px 14px 60px;
+      }
+
+      .cta-buttons {
+        flex-direction: column;
+        gap: 14px;
+      }
+
+      .btn {
+        width: 100%;
+        min-width: unset;
+      }
+
+      .form-container {
+        padding: 28px 18px;
+      }
+
+      .success-box {
+        padding: 28px 22px;
+      }
+
+      .success-box h3 {
+        font-size: 1.4rem;
+      }
+
+      .success-check {
+        width: 70px;
+        height: 70px;
+      }
+    }
+  </style>
+</head>
+<body class="day">
+
+  <!-- FULL PAGE LOADER -->
+  <div class="page-loader" id="pageLoader">
+    <div class="loader-box">
+      <img src="https://cdn-icons-png.flaticon.com/512/201/201623.png" class="loader-plane" alt="Loading Plane" />
+      <div class="loader-text">Preparing your journey...</div>
+    </div>
+  </div>
+
+  <!-- NIGHT MODE TOGGLE -->
+  <div class="toggle-container">
+    <button class="toggle-btn" id="themeToggle">🌙 Night</button>
+  </div>
+
+  <!-- SKY BACKGROUND -->
+  <div class="sky">
+    <div class="cloud" style="width:120px; height:50px; top:15%; animation-duration: 50s;"></div>
+    <div class="cloud" style="width:180px; height:70px; top:25%; animation-duration: 70s; animation-delay: -10s;"></div>
+    <div class="cloud" style="width:140px; height:60px; top:40%; animation-duration: 60s; animation-delay: -20s;"></div>
+    <div class="cloud" style="width:200px; height:80px; top:55%; animation-duration: 90s; animation-delay: -30s;"></div>
+    <div class="cloud" style="width:160px; height:65px; top:70%; animation-duration: 80s; animation-delay: -40s;"></div>
+  </div>
+
+  <!-- HERO CONTENT -->
+  <div class="hero" id="home">
+    <h1 class="gradient-text">MAKE MY TRIP</h1>
+    <p class="typing-text"></p>
+
+    <div class="cta-buttons">
+      <button class="btn primary" id="exploreBtn"><span>Explore Destinations</span></button>
+      <button class="btn secondary" id="planTripBtn"><span>Plan Your Trip</span></button>
+    </div>
+  </div>
+
+  <!-- DESTINATIONS SECTION -->
+  <section class="destinations-section" id="destinations">
+    <h2>Top Destinations</h2>
+    <p class="subtitle">Discover breathtaking places around the world.</p>
+
+    <div class="cards-container" id="cardsContainer"></div>
+  </section>
+
+  <!-- FORM SECTION -->
+  <section class="form-section" id="planTrip">
+    <div class="form-container">
+      <h2>Plan Your Dream Trip</h2>
+      <p class="subtitle">Fill in your details and we’ll contact you shortly.</p>
+
+      <form id="tripForm" novalidate>
+        <div class="form-group">
+          <input type="text" id="fullName" placeholder="Full Name" />
+          <small>Error message</small>
+        </div>
+
+        <div class="form-group">
+          <input type="email" id="email" placeholder="Email Address" />
+          <small>Error message</small>
+        </div>
+
+        <div class="form-group">
+          <input type="tel" id="phone" placeholder="Phone Number" />
+          <small>Error message</small>
+        </div>
+
+        <div class="form-group">
+          <select id="destination">
+            <option value="">Select Destination</option>
+            <option value="Paris">Paris, France</option>
+            <option value="Maldives">Maldives</option>
+            <option value="Dubai">Dubai, UAE</option>
+            <option value="Switzerland">Switzerland</option>
+            <option value="Bali">Bali, Indonesia</option>
+            <option value="London">London, UK</option>
+          </select>
+          <small>Error message</small>
+        </div>
+
+        <div class="form-group">
+          <input type="date" id="startDate" />
+          <small>Error message</small>
+        </div>
+
+        <div class="form-group">
+          <input type="number" id="travelers" placeholder="Number of Travelers" min="1" />
+          <small>Error message</small>
+        </div>
+
+        <button type="submit" class="submit-btn"><span>Submit Request</span></button>
+      </form>
+
+      <a href="#home" class="back-home" id="backHomeLink">← Back to Home</a>
+    </div>
+  </section>
+
+  <!-- SUCCESS ANIMATION OVERLAY -->
+  <div class="success-overlay" id="successOverlay">
+    <div class="success-box">
+      <div class="success-check"></div>
+      <h3>Success!</h3>
+      <p>Your trip request has been submitted successfully.</p>
+      <button id="successCloseBtn">Back to Home</button>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT -->
+  <script>
+    /* ===== FULL PAGE LOADER ===== */
+    const pageLoader = document.getElementById("pageLoader");
+    window.addEventListener("load", () => {
+      setTimeout(() => {
+        pageLoader.classList.add("hidden");
+      }, 1200);
+    });
+
+    /* ===== NIGHT MODE TOGGLE ===== */
+    const toggleBtn = document.getElementById("themeToggle");
+    const body = document.body;
+
+    toggleBtn.addEventListener("click", () => {
+      body.classList.toggle("night");
+      body.classList.toggle("day");
+
+      if (body.classList.contains("night")) {
+        toggleBtn.textContent = "☀️ Day";
+      } else {
+        toggleBtn.textContent = "🌙 Night";
+      }
+    });
+
+    /* ===== TYPING TEXT EFFECT ===== */
+    const textArray = [
+      "Explore the world under open skies.",
+      "Your dream destinations await.",
+      "Fly smarter. Travel happier.",
+      "Let your journey begin."
+    ];
+
+    const typingText = document.querySelector(".typing-text");
+    let textIndex = 0;
+    let charIndex = 0;
+    let isDeleting = false;
+
+    function typeEffect() {
+      const currentText = textArray[textIndex];
+
+      if (!isDeleting) {
+        typingText.textContent = currentText.substring(0, charIndex + 1);
+        charIndex++;
+        if (charIndex === currentText.length) {
+          setTimeout(() => isDeleting = true, 1500);
+        }
+      } else {
+        typingText.textContent = currentText.substring(0, charIndex - 1);
+        charIndex--;
+        if (charIndex === 0) {
+          isDeleting = false;
+          textIndex = (textIndex + 1) % textArray.length;
+        }
+      }
+      setTimeout(typeEffect, isDeleting ? 60 : 100);
+    }
+
+    typeEffect();
+
+    /* ===== DESTINATIONS DATA ===== */
+    const destinations = [
+      {
+        name: "Paris, France",
+        description: "The city of love, famous for the Eiffel Tower, art museums, and romantic streets.",
+        image: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80"
+      },
+      {
+        name: "Maldives",
+        description: "Tropical paradise with crystal-clear waters, overwater villas, and coral reefs.",
+        image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"
+      },
+      {
+        name: "Dubai, UAE",
+        description: "Luxury, skyscrapers, desert safaris, and world-class shopping experiences.",
+        image: "https://images.unsplash.com/photo-1504274066651-8d31a536b11a?auto=format&fit=crop&w=800&q=80"
+      },
+      {
+        name: "Switzerland",
+        description: "Snow-capped Alps, scenic train rides, lakes, and charming villages.",
+        image: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=800&q=80"
+      },
+      {
+        name: "Bali, Indonesia",
+        description: "Lush landscapes, temples, beaches, and peaceful island vibes.",
+        image: "https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=800&q=80"
+      },
+      {
+        name: "London, UK",
+        description: "Historic landmarks, modern culture, museums, and iconic city life.",
+        image: "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=800&q=80"
+      }
+    ];
+
+    const cardsContainer = document.getElementById("cardsContainer");
+    const exploreBtn = document.getElementById("exploreBtn");
+    const planTripBtn = document.getElementById("planTripBtn");
+    const destinationsSection = document.getElementById("destinations");
+    const formSection = document.getElementById("planTrip");
+    const backHomeLink = document.getElementById("backHomeLink");
+
+    /* ===== RENDER DESTINATION CARDS ===== */
+    destinations.forEach((place) => {
+      const card = document.createElement("div");
+      card.className = "card";
+
+      card.innerHTML = `
+        <div class="card-image" style="background-image: url('${place.image}')"></div>
+        <div class="card-content">
+          <h3>${place.name}</h3>
+          <p>${place.description}</p>
+          <a href="#planTrip" class="bookNowLink">Book Now →</a>
+        </div>
+      `;
+
+      cardsContainer.appendChild(card);
+    });
+
+    /* ===== NAVIGATION LOGIC WITH LOADING ===== */
+    exploreBtn.addEventListener("click", () => {
+      exploreBtn.classList.add("loading");
+      setTimeout(() => {
+        exploreBtn.classList.remove("loading");
+        destinationsSection.classList.add("active");
+        formSection.classList.remove("active");
+        destinationsSection.scrollIntoView({ behavior: "smooth" });
+      }, 700);
+    });
+
+    planTripBtn.addEventListener("click", () => {
+      planTripBtn.classList.add("loading");
+      setTimeout(() => {
+        planTripBtn.classList.remove("loading");
+        destinationsSection.classList.remove("active");
+        formSection.classList.add("active");
+        formSection.scrollIntoView({ behavior: "smooth" });
+      }, 700);
+    });
+
+    backHomeLink.addEventListener("click", () => {
+      destinationsSection.classList.remove("active");
+      formSection.classList.remove("active");
+      document.getElementById("home").scrollIntoView({ behavior: "smooth" });
+    });
+
+    /* ===== FORM VALIDATION + SUCCESS ANIMATION ===== */
+    const form = document.getElementById("tripForm");
+    const fullName = document.getElementById("fullName");
+    const email = document.getElementById("email");
+    const phone = document.getElementById("phone");
+    const destinationSelect = document.getElementById("destination");
+    const startDate = document.getElementById("startDate");
+    const travelers = document.getElementById("travelers");
+    const submitBtn = document.querySelector(".submit-btn");
+    const successOverlay = document.getElementById("successOverlay");
+    const successCloseBtn = document.getElementById("successCloseBtn");
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      submitBtn.classList.add("loading");
+
+      setTimeout(() => {
+        submitBtn.classList.remove("loading");
+        if (validateForm()) {
+          showSuccess();
+          form.reset();
+          const groups = document.querySelectorAll(".form-group");
+          groups.forEach(group => group.classList.remove("success", "error"));
+        }
+      }, 1200);
+    });
+
+    function validateForm() {
+      let isValid = true;
+
+      if (fullName.value.trim() === "") {
+        setError(fullName, "Full name is required");
+        isValid = false;
+      } else if (fullName.value.trim().length < 3) {
+        setError(fullName, "Name must be at least 3 characters");
+        isValid = false;
+      } else {
+        setSuccess(fullName);
+      }
+
+      if (email.value.trim() === "") {
+        setError(email, "Email is required");
+        isValid = false;
+      } else if (!isValidEmail(email.value.trim())) {
+        setError(email, "Please enter a valid email address");
+        isValid = false;
+      } else {
+        setSuccess(email);
+      }
+
+      if (phone.value.trim() === "") {
+        setError(phone, "Phone number is required");
+        isValid = false;
+      } else if (!/^[0-9]{10}$/.test(phone.value.trim())) {
+        setError(phone, "Phone must be 10 digits");
+        isValid = false;
+      } else {
+        setSuccess(phone);
+      }
+
+      if (destinationSelect.value === "") {
+        setError(destinationSelect, "Please select a destination");
+        isValid = false;
+      } else {
+        setSuccess(destinationSelect);
+      }
+
+      if (startDate.value === "") {
+        setError(startDate, "Please select a start date");
+        isValid = false;
+      } else {
+        setSuccess(startDate);
+      }
+
+      if (travelers.value === "" || travelers.value < 1) {
+        setError(travelers, "Please enter at least 1 traveler");
+        isValid = false;
+      } else {
+        setSuccess(travelers);
+      }
+
+      return isValid;
+    }
+
+    function setError(input, message) {
+      const formGroup = input.parentElement;
+      const small = formGroup.querySelector("small");
+      small.innerText = message;
+      formGroup.classList.remove("success");
+      formGroup.classList.add("error");
+    }
+
+    function setSuccess(input) {
+      const formGroup = input.parentElement;
+      formGroup.classList.remove("error");
+      formGroup.classList.add("success");
+    }
+
+    function isValidEmail(email) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+    function showSuccess() {
+      successOverlay.classList.add("active");
+    }
+
+    successCloseBtn.addEventListener("click", () => {
+      successOverlay.classList.remove("active");
+      formSection.classList.remove("active");
+      document.getElementById("home").scrollIntoView({ behavior: "smooth" });
+    });
+  </script>
+
+</body>
+</html>
